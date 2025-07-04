@@ -1,9 +1,38 @@
+# Fichier: tasks/03_setup_database.yml (VERSION FINALE)
 ---
-- name: Start and enable MariaDB service
-  ansible.builtin.service:
-    name: "{{ db_service }}"
-    state: started
-    enabled: yes
+- name: Ensure MariaDB data directory exists and has correct permissions
+  ansible.builtin.file:
+    path: /var/lib/mysql
+    state: directory
+    owner: "{{ db_os_user }}"
+    group: "{{ db_os_user }}"
+    mode: '0755'
+
+- name: Initialize MariaDB data directory if it is not already initialized
+  ansible.builtin.command:
+    cmd: "mariadb-install-db --user={{ db_os_user }} --datadir=/var/lib/mysql"
+  args:
+    creates: /var/lib/mysql/mysql
+  changed_when: true
+
+- name: (Cleanup) Ensure no old MariaDB processes are running
+  ansible.builtin.command:
+    cmd: "pkill -f mariadb || true"
+  changed_when: false
+
+- name: Start MariaDB process directly
+  ansible.builtin.shell:
+    cmd: "mysqld_safe --datadir=/var/lib/mysql &"
+  args:
+    creates: /var/run/mysqld/mysqld.sock
+  changed_when: true
+
+- name: Wait for MariaDB socket to be ready before proceeding
+  ansible.builtin.wait_for:
+    path: /var/run/mysqld/mysqld.sock
+    state: present
+    timeout: 60
+    delay: 5
 
 - name: Set MariaDB root password
   community.mysql.mysql_user:

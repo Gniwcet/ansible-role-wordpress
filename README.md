@@ -71,6 +71,3 @@ cd playbooks/
 # Lancez le playbook en utilisant l'inventaire situé dans le dossier parent
 ansible-playbook -i ../inventaire deploy_wordpress.yml
 ```
-
-### Note sur la Sécurité
-Stocker les mots de passe en clair dans l'inventaire (`ansible_ssh_pass`) est pratique pour les tests et les laboratoires, mais est fortement déconseillé pour les environnements de production. Pour la production, l'utilisation de clés SSH ou d'Ansible Vault pour chiffrer les secrets est la méthode recommandée.
