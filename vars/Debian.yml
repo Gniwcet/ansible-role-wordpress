@@ -9,6 +9,7 @@ required_packages:
   - wget
   - unzip
   - python3-pymysql
+  - psmisc
 
 # Noms des services et chemins
 web_server_service: "apache2"
@@ -18,3 +19,4 @@ web_server_conf_path: "/etc/apache2/sites-available/wordpress.conf"
 db_service: "mariadb"
 db_os_user: "mysql"
 db_log_path: "/var/log/mysql/error.log"
+db_socket_path: "/var/run/mysqld/mysqld.sock"

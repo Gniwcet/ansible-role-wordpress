@@ -9,6 +9,8 @@ required_packages:
   - unzip
   - python3-PyMySQL
   - policycoreutils-python-utils
+  - procps-ng
+  - psmisc
 
 # Noms des services et chemins
 web_server_service: "httpd"
@@ -18,3 +20,4 @@ web_server_conf_path: "/etc/httpd/conf.d/wordpress.conf"
 db_service: "mariadb"
 db_os_user: "mysql"
 db_log_path: "/var/log/mariadb/mariadb.log"
+db_socket_path: "/var/lib/mysql/mysql.sock"

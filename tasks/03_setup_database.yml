@@ -1,8 +1,16 @@
-# Fichier: tasks/03_setup_database.yml (VERSION FINALE)
+# Fichier: tasks/03_setup_database.yml (VERSION FINALE ET ROBUSTE)
 ---
 - name: Ensure MariaDB data directory exists and has correct permissions
   ansible.builtin.file:
     path: /var/lib/mysql
+    state: directory
+    owner: "{{ db_os_user }}"
+    group: "{{ db_os_user }}"
+    mode: '0755'
+
+- name: Ensure the directory for the socket exists
+  ansible.builtin.file:
+    path: "{{ db_socket_path | dirname }}"
     state: directory
     owner: "{{ db_os_user }}"
     group: "{{ db_os_user }}"
@@ -16,20 +24,20 @@
   changed_when: true
 
 - name: (Cleanup) Ensure no old MariaDB processes are running
-  ansible.builtin.command:
-    cmd: "pkill -f mariadb || true"
+  ansible.builtin.shell:
+    cmd: "killall mysqld_safe mariadbd || true"
   changed_when: false
 
 - name: Start MariaDB process directly
   ansible.builtin.shell:
     cmd: "mysqld_safe --datadir=/var/lib/mysql &"
   args:
-    creates: /var/run/mysqld/mysqld.sock
+    creates: "{{ db_socket_path }}"
   changed_when: true
 
 - name: Wait for MariaDB socket to be ready before proceeding
   ansible.builtin.wait_for:
-    path: /var/run/mysqld/mysqld.sock
+    path: "{{ db_socket_path }}"
     state: present
     timeout: 60
     delay: 5
@@ -39,7 +47,7 @@
     name: root
     host: localhost
     password: "{{ db_root_password }}"
-    login_unix_socket: /var/run/mysqld/mysqld.sock
+    login_unix_socket: "{{ db_socket_path }}"
 
 - name: Remove anonymous MariaDB users
   community.mysql.mysql_user:
