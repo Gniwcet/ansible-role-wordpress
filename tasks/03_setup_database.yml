@@ -1,6 +1,11 @@
-# Fichier: tasks/03_setup_database.yml (VERSION FINALE ET ROBUSTE)
+# Fichier: tasks/03_setup_database.yml
 ---
-- name: Ensure MariaDB data directory exists and has correct permissions
+- name: (RESET) Remove previous MariaDB data directory to ensure a clean state
+  ansible.builtin.file:
+    path: /var/lib/mysql
+    state: absent
+
+- name: Ensure MariaDB data directory exists
   ansible.builtin.file:
     path: /var/lib/mysql
     state: directory
@@ -16,11 +21,18 @@
     group: "{{ db_os_user }}"
     mode: '0755'
 
-- name: Initialize MariaDB data directory if it is not already initialized
+- name: Ensure PID directory exists (for RedHat family)
+  ansible.builtin.file:
+    path: "{{ db_pid_dir }}"
+    state: directory
+    owner: "{{ db_os_user }}"
+    group: "{{ db_os_user }}"
+    mode: '0755'
+  when: ansible_os_family == "RedHat"
+
+- name: Initialize MariaDB data directory
   ansible.builtin.command:
     cmd: "mariadb-install-db --user={{ db_os_user }} --datadir=/var/lib/mysql"
-  args:
-    creates: /var/lib/mysql/mysql
   changed_when: true
 
 - name: (Cleanup) Ensure no old MariaDB processes are running
@@ -31,8 +43,6 @@
 - name: Start MariaDB process directly
   ansible.builtin.shell:
     cmd: "mysqld_safe --datadir=/var/lib/mysql &"
-  args:
-    creates: "{{ db_socket_path }}"
   changed_when: true
 
 - name: Wait for MariaDB socket to be ready before proceeding

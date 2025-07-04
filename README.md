@@ -2,11 +2,11 @@
 
 Ce rôle installe une pile LAMP (Apache, MariaDB, PHP) complète et déploie la dernière version de WordPress.
 
-Il est conçu pour être idempotent et fonctionner sur les familles de systèmes d'exploitation Debian (Ubuntu) et RedHat (Rocky Linux, CentOS).
+Il a été spécifiquement conçu et renforcé pour être **extrêmement robuste** et fonctionner de manière fiable sur les familles de systèmes d'exploitation Debian (Ubuntu) et RedHat (Rocky Linux, CentOS), y compris dans des **environnements conteneurisés minimaux (comme Docker) qui ne disposent pas d'un système d'initialisation `systemd` complet.**
 
 ## Prérequis
 
-Les collections Ansible suivantes doivent être installées sur votre machine de contrôle :
+Les collections Ansible suivantes doivent être installées sur votre machine de contrôle. Si vous rencontrez des erreurs de modules non trouvés, forcez la réinstallation pour réparer un éventuel cache corrompu (`--force`).
 
 ```bash
 ansible-galaxy collection install community.mysql
@@ -25,6 +25,13 @@ Les variables suivantes peuvent être surchargées pour personnaliser l'installa
 | `db_root_password` | `"SuperSecureRootPassword"` | Le mot de passe root pour MariaDB.        |
 | `http_host`        | `"localhost"`               | Le nom d'hôte utilisé dans le vhost Apache. |
 | `document_root`    | `"/var/www/wordpress"`      | Le chemin où les fichiers WordPress seront installés. |
+
+## Notes sur l'Implémentation
+
+Ce rôle utilise des méthodes directes pour gérer les services afin de garantir son fonctionnement dans des conteneurs sans `systemd`.
+
+*   **Gestion de MariaDB :** Le processus `mariadb` est géré directement via les commandes `mariadb-install-db` et `mysqld_safe`. Le rôle n'utilise **pas** le module `ansible.builtin.service` pour la base de données.
+*   **Nettoyage :** Pour garantir l'idempotence et la propreté, le rôle supprime et recrée le répertoire de données de MariaDB à chaque exécution. C'est un comportement voulu pour les environnements de test. Pour un usage en production, cette étape (`(RESET) Remove previous MariaDB...`) devrait être retirée ou conditionnée.
 
 ## Exemple de Déploiement
 
@@ -46,8 +53,6 @@ Les variables suivantes peuvent être surchargées pour personnaliser l'installa
     [clients:vars]
     ansible_python_interpreter=/usr/bin/python3
     ```
-    *   `ansible_ssh_pass`: Spécifie le mot de passe de connexion SSH.
-    *   `ansible_ssh_common_args`: Permet de désactiver la vérification de la clé d'hôte SSH, utile en environnement de test.
 
 2.  **Créez un playbook**, par exemple `playbooks/deploy_wordpress.yml`, pour appliquer le rôle au groupe parent `clients`.
 
