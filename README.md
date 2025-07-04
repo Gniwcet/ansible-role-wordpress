@@ -26,31 +26,51 @@ Les variables suivantes peuvent être surchargées pour personnaliser l'installa
 | `http_host`        | `"localhost"`               | Le nom d'hôte utilisé dans le vhost Apache. |
 | `document_root`    | `"/var/www/wordpress"`      | Le chemin où les fichiers WordPress seront installés. |
 
-## Exemple de Playbook
+## Exemple de Déploiement
 
-1.  Créez un fichier d'inventaire, par exemple `inventory.ini`:
+1.  **Créez un fichier d'inventaire**, par exemple `inventaire`, en structurant vos serveurs par OS.
 
     ```ini
-    [webservers]
-    ubuntu_server ansible_host=192.168.1.10
-    rocky_server ansible_host=192.168.1.11
-    ```
+    [ubuntu]
+    client1 ansible_user=root ansible_ssh_pass=P@ssw0rd ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+    client2 ansible_user=root ansible_ssh_pass=P@ssw0rd ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
-2.  Créez un playbook, par exemple `deploy_wordpress.yml`:
+    [rocky]
+    client3 ansible_user=root ansible_ssh_pass=P@ssw0rd ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+    client4 ansible_user=root ansible_ssh_pass=P@ssw0rd ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+    [clients:children]
+    ubuntu
+    rocky
+
+    [clients:vars]
+    ansible_python_interpreter=/usr/bin/python3
+    ```
+    *   `ansible_ssh_pass`: Spécifie le mot de passe de connexion SSH.
+    *   `ansible_ssh_common_args`: Permet de désactiver la vérification de la clé d'hôte SSH, utile en environnement de test.
+
+2.  **Créez un playbook**, par exemple `playbooks/deploy_wordpress.yml`, pour appliquer le rôle au groupe parent `clients`.
 
     ```yaml
     ---
-    - name: Deploy WordPress on all webservers
-      hosts: webservers
+    - name: Deploy WordPress
+      hosts: clients
       become: yes
       roles:
-        - ansible-role-wordpress
+        - roles/ansible-role-wordpress
     ```
 
 ## Exécution
 
-Lancez le playbook avec la commande suivante :
+Lancez le playbook en spécifiant votre fichier d'inventaire.
 
 ```bash
-ansible-playbook -i inventory.ini deploy_wordpress.yml
+# Placez-vous dans le dossier de vos playbooks
+cd playbooks/
+
+# Lancez le playbook en utilisant l'inventaire situé dans le dossier parent
+ansible-playbook -i ../inventaire deploy_wordpress.yml
 ```
+
+### Note sur la Sécurité
+Stocker les mots de passe en clair dans l'inventaire (`ansible_ssh_pass`) est pratique pour les tests et les laboratoires, mais est fortement déconseillé pour les environnements de production. Pour la production, l'utilisation de clés SSH ou d'Ansible Vault pour chiffrer les secrets est la méthode recommandée.
