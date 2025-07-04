@@ -1,0 +1,33 @@
+---
+- name: Configure Apache vhost for WordPress
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "{{ web_server_conf_path }}"
+  notify: Restart web server
+
+- name: Enable new site (Debian family)
+  community.general.apache2_site:
+    name: wordpress.conf
+    state: enabled
+  when: ansible_os_family == "Debian"
+  notify: Restart web server
+
+- name: Enable rewrite module
+  community.general.apache2_module:
+    name: rewrite
+    state: present
+  notify: Restart web server
+
+- name: Allow httpd to connect to network (for SELinux)
+  community.general.selinux:
+    policy: httpd_can_network_connect
+    value: 1
+    state: permissive
+    persistent: yes
+  when: ansible_os_family == "RedHat"
+
+- name: Start and enable web server
+  ansible.builtin.service:
+    name: "{{ web_server_service }}"
+    state: started
+    enabled: yes

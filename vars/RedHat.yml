@@ -1,0 +1,18 @@
+---
+# Noms des paquets pour RedHat/Rocky/CentOS
+required_packages:
+  - httpd
+  - php
+  - php-mysqlnd
+  - mariadb-server
+  - wget
+  - unzip
+  - python3-PyMySQL
+  - policycoreutils-python-utils
+
+# Noms des services et chemins
+web_server_service: "httpd"
+web_server_user: "apache"
+web_server_group: "apache"
+web_server_conf_path: "/etc/httpd/conf.d/wordpress.conf"
+db_service: "mariadb"

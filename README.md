@@ -1,38 +1,56 @@
-Role Name
-=========
+# Ansible Role: WordPress Installer
 
-A brief description of the role goes here.
+Ce rôle installe une pile LAMP (Apache, MariaDB, PHP) complète et déploie la dernière version de WordPress.
 
-Requirements
-------------
+Il est conçu pour être idempotent et fonctionner sur les familles de systèmes d'exploitation Debian (Ubuntu) et RedHat (Rocky Linux, CentOS).
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+## Prérequis
 
-Role Variables
---------------
+Les collections Ansible suivantes doivent être installées sur votre machine de contrôle :
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```bash
+ansible-galaxy collection install community.mysql
+ansible-galaxy collection install community.general
+```
 
-Dependencies
-------------
+## Variables du Rôle
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Les variables suivantes peuvent être surchargées pour personnaliser l'installation. Elles se trouvent dans `defaults/main.yml`.
 
-Example Playbook
-----------------
+| Variable           | Valeur par défaut           | Description                               |
+| ------------------ | --------------------------- | ----------------------------------------- |
+| `db_name`          | `"wordpress"`               | Le nom de la base de données WordPress.   |
+| `db_user`          | `"wp_user"`                 | L'utilisateur pour la base de données.    |
+| `db_password`      | `"SecurePassword123"`       | Le mot de passe pour l'utilisateur de la BDD. |
+| `db_root_password` | `"SuperSecureRootPassword"` | Le mot de passe root pour MariaDB.        |
+| `http_host`        | `"localhost"`               | Le nom d'hôte utilisé dans le vhost Apache. |
+| `document_root`    | `"/var/www/wordpress"`      | Le chemin où les fichiers WordPress seront installés. |
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+## Exemple de Playbook
 
-    - hosts: servers
+1.  Créez un fichier d'inventaire, par exemple `inventory.ini`:
+
+    ```ini
+    [webservers]
+    ubuntu_server ansible_host=192.168.1.10
+    rocky_server ansible_host=192.168.1.11
+    ```
+
+2.  Créez un playbook, par exemple `deploy_wordpress.yml`:
+
+    ```yaml
+    ---
+    - name: Deploy WordPress on all webservers
+      hosts: webservers
+      become: yes
       roles:
-         - { role: username.rolename, x: 42 }
+        - ansible-role-wordpress
+    ```
 
-License
--------
+## Exécution
 
-BSD
+Lancez le playbook avec la commande suivante :
 
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+```bash
+ansible-playbook -i inventory.ini deploy_wordpress.yml
+```

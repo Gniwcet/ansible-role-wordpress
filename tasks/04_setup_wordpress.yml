@@ -1,0 +1,37 @@
+---
+- name: Create document root directory
+  ansible.builtin.file:
+    path: "{{ document_root }}"
+    state: directory
+    owner: "{{ web_server_user }}"
+    group: "{{ web_server_group }}"
+    mode: '0755'
+
+- name: Download and unarchive WordPress
+  ansible.builtin.unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: /tmp/
+    remote_src: yes
+    creates: /tmp/wordpress
+
+- name: Move WordPress files to document root
+  ansible.builtin.command:
+    cmd: "cp -r /tmp/wordpress/. {{ document_root }}/"
+    creates: "{{ document_root }}/index.php"
+  changed_when: true
+
+- name: Create wp-config.php from template
+  ansible.builtin.template:
+    src: wp-config.php.j2
+    dest: "{{ document_root }}/wp-config.php"
+    owner: "{{ web_server_user }}"
+    group: "{{ web_server_group }}"
+    mode: "0640"
+
+- name: Set correct ownership for WordPress files
+  ansible.builtin.file:
+    path: "{{ document_root }}"
+    state: directory
+    owner: "{{ web_server_user }}"
+    group: "{{ web_server_group }}"
+    recurse: yes

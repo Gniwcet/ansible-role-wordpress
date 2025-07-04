@@ -1,0 +1,18 @@
+---
+# Noms des paquets pour Debian/Ubuntu
+required_packages:
+  - apache2
+  - php
+  - libapache2-mod-php
+  - php-mysql
+  - mariadb-server
+  - wget
+  - unzip
+  - python3-pymysql
+
+# Noms des services et chemins
+web_server_service: "apache2"
+web_server_user: "www-data"
+web_server_group: "www-data"
+web_server_conf_path: "/etc/apache2/sites-available/wordpress.conf"
+db_service: "mariadb"
