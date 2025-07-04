@@ -1,0 +1,9 @@
+---
+apache_service_ubuntu: apache2
+apache_service_rocky: httpd
+mariadb_root_password: "examplerootPW"
+wordpress_db_name: "wordpress"
+wordpress_db_user: "example"
+wordpress_db_password: "examplePW"
+wordpress_site_url: "http://localhost"
+wordpress_install_dir: "/var/www/html"

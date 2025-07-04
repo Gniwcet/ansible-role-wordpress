@@ -1,0 +1,24 @@
+---
+- name: Redémarrer Apache
+  ansible.builtin.shell: |
+    {% if ansible_os_family == "Debian" %}
+    service apache2 restart
+    {% elif ansible_os_family == "RedHat" %}
+    /usr/sbin/httpd -DFOREGROUND &
+    {% endif %}
+  listen: "redemarrer apache"
+  args:
+    warn: no
+    removes: /tmp/apache_pid_file
+
+- name: Recharger Apache
+  ansible.builtin.shell: |
+    {% if ansible_os_family == "Debian" %}
+    service apache2 reload
+    {% elif ansible_os_family == "RedHat" %}
+    /usr/sbin/httpd -DFOREGROUND &
+    {% endif %}
+  listen: "recharger apache"
+  args:
+    warn: no
+    removes: /tmp/apache_pid_file

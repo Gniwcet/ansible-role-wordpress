@@ -1,0 +1,13 @@
+---
+wordpress_db_name: wordpress
+wordpress_db_user: example
+wordpress_db_password: P@ssW0rdS3cur3!789
+wordpress_db_root_password: P@ssW0rdS3cur3!789
+
+wordpress_install_dir: /var/www/html
+
+apache_user: ""
+apache_group: ""
+apache_config_dir: ""
+apache_enable_site_cmd: ""
+apache_enable_module_cmd: ""
